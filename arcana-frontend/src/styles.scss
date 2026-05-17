@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold:        #c9a84c;
+  --gold-light:  #f0d87a;
+  --gold-dim:    rgba(201,168,76,0.35);
+  --bg:          #0b0714;
+  --surface:     #130d24;
+  --purple-deep: #1c0d3a;
+  --purple-mid:  #2d1060;
+  --text:        #e8d8b4;
+  --text-dim:    rgba(232,216,180,0.5);
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--text);
+  touch-action: none;
+  overflow: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(201,168,76,.25); border-radius: 2px; }

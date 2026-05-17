@@ -1,0 +1,373 @@
+import {
+  Component, Input, Output, EventEmitter,
+  OnChanges, SimpleChanges, signal, computed,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { TarotCard } from '../../../core/models/card.model';
+
+// ── Public types ─────────────────────────────────────────────────────────────
+export interface CardSelectionItem {
+  card:     TarotCard;
+  reversed: boolean;
+}
+
+/** Legacy shape kept for result-sheet / save payload */
+export interface DeckSelection {
+  cards:    TarotCard[];
+  reversed: boolean[];
+}
+
+// ── Internal slot ────────────────────────────────────────────────────────────
+interface Slot {
+  idx:  number;   // position in shuffled order (0-77)
+  card: TarotCard;
+  ox:   number;   // random x offset px
+  oy:   number;   // random y offset px
+  or:   number;   // random rotation deg
+}
+
+@Component({
+  selector: 'app-card-deck',
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <!-- Deck stage — 3 straight rows ──────────────────────────────────── -->
+    <div class="deck-stage">
+      @for (row of rows(); track $index) {
+        <div class="card-row">
+          @for (slot of row; track slot.idx) {
+            <div
+              class="s-card"
+              [class.active]="sliderVal() === slot.idx
+                              && !removedSet().has(slot.idx)
+                              && !removingSet().has(slot.idx)"
+              [class.removing]="removingSet().has(slot.idx)"
+              [class.removed]="removedSet().has(slot.idx)"
+              [style]="slotStyle(slot)"
+              (click)="clickCard(slot)"
+            ></div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Slider ────────────────────────────────────────────────────────── -->
+    <div class="slider-wrap">
+      <div class="slider-labels">
+        <span>First</span>
+        <span>Card {{ sliderVal() + 1 }} / {{ allCards.length }}</span>
+        <span>Last</span>
+      </div>
+      <div class="slider-track">
+        <div class="slider-rail">
+          <div class="slider-fill" [style.width]="fillPct() + '%'"></div>
+        </div>
+        <input
+          class="slider-input"
+          type="range" min="0" [max]="allCards.length - 1"
+          [value]="sliderVal()"
+          (input)="onSlider($event)"
+        >
+      </div>
+    </div>
+
+    <!-- Select This Card button ────────────────────────────────────────── -->
+    <button
+      class="select-btn"
+      [disabled]="selected().length >= spreadSize || isHighlightedUnavailable()"
+      (click)="selectHighlighted()"
+    >
+      Select This Card
+    </button>
+  `,
+  styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      gap: 6px;
+    }
+
+    /* ─── Deck stage ─────────────────────────────────────────────────── */
+    .deck-stage {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0 4px;
+    }
+    .card-row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    /* ─── Card slot ──────────────────────────────────────────────────── */
+    .s-card {
+      width:  46px;
+      height: 74px;
+      flex-shrink: 0;
+      border-radius: 6px;
+      background: #1c0d3a;
+      border: 1px solid rgba(201,168,76,.20);
+      margin-right: -28px;
+      position: relative;
+      cursor: pointer;
+      transition:
+        transform        .26s cubic-bezier(.23,1,.32,1),
+        box-shadow       .26s,
+        border-color     .26s,
+        opacity          .26s,
+        width            .34s ease .28s,
+        margin-right     .34s ease .28s;
+      box-shadow: 0 2px 10px rgba(0,0,0,.55);
+    }
+    .s-card:last-child { margin-right: 0; }
+
+    .s-card:hover:not(.removing):not(.removed) {
+      border-color: rgba(201,168,76,.45);
+      box-shadow: 0 0 10px rgba(201,168,76,.25), 0 4px 12px rgba(0,0,0,.5);
+    }
+    .s-card::before {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border: 1px solid rgba(201,168,76,.09);
+      border-radius: 3px;
+      pointer-events: none;
+    }
+    .s-card::after {
+      content: '✦';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: rgba(201,168,76,.12);
+      pointer-events: none;
+    }
+
+    /* Slider highlight */
+    .s-card.active {
+      border-color: rgba(201,168,76,.80) !important;
+      box-shadow:
+        0 0 18px rgba(201,168,76,.55),
+        0 -4px 22px rgba(123,47,191,.50),
+        0 8px 24px rgba(0,0,0,.65) !important;
+      z-index: 999 !important;
+    }
+    .s-card.active::after { color: rgba(201,168,76,.40); }
+
+    /* Phase 1 — fly up and vanish */
+    .s-card.removing {
+      transform: translateY(-55px) scale(0.65) !important;
+      opacity: 0 !important;
+      pointer-events: none;
+      border-color: rgba(201,168,76,.90) !important;
+      box-shadow: 0 0 24px rgba(201,168,76,.70) !important;
+      transition:
+        transform    .26s cubic-bezier(.23,1,.32,1),
+        opacity      .22s,
+        border-color .26s,
+        box-shadow   .26s !important;
+    }
+
+    /* Phase 2 — collapse slot */
+    .s-card.removed {
+      width: 0 !important;
+      margin-right: 0 !important;
+      opacity: 0 !important;
+      border-width: 0 !important;
+      pointer-events: none;
+      transition:
+        width        .34s ease,
+        margin-right .34s ease,
+        opacity      .1s,
+        border-width .34s !important;
+    }
+
+    /* ─── Slider ─────────────────────────────────────────────────────── */
+    .slider-wrap { width: min(380px, 92vw); padding: 2px 0 2px; }
+    .slider-labels {
+      display: flex; justify-content: space-between;
+      font-size: .6rem; color: rgba(201,168,76,.45);
+      letter-spacing: .1em; margin-bottom: 6px; padding: 0 2px;
+    }
+    .slider-track {
+      position: relative; height: 36px; display: flex; align-items: center;
+    }
+    .slider-rail {
+      position: absolute; left: 0; right: 0; height: 3px;
+      border-radius: 2px; background: rgba(255,255,255,.07); overflow: hidden;
+    }
+    .slider-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2d1060, #c9a84c);
+      border-radius: 2px;
+    }
+    .slider-input {
+      position: absolute; left: 0; right: 0; width: 100%;
+      -webkit-appearance: none; appearance: none;
+      background: transparent; height: 36px; cursor: pointer;
+    }
+    .slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, #f0d87a, #c9a84c);
+      border: 2px solid rgba(255,255,255,.3);
+      box-shadow: 0 0 16px rgba(201,168,76,.6), 0 2px 8px rgba(0,0,0,.5);
+      cursor: grab; transition: transform .15s;
+    }
+    .slider-input:active::-webkit-slider-thumb {
+      cursor: grabbing; transform: scale(1.15);
+    }
+
+    /* ─── Select This Card button ────────────────────────────────────── */
+    .select-btn {
+      font-family: inherit;
+      font-size: .8rem;
+      letter-spacing: .14em;
+      color: #c9a84c;
+      background: rgba(201,168,76,.08);
+      border: 1px solid rgba(201,168,76,.35);
+      border-radius: 50px;
+      padding: 10px 28px;
+      cursor: pointer;
+      transition: background .25s, border-color .25s, box-shadow .25s;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .select-btn:not(:disabled):hover {
+      background: rgba(201,168,76,.16);
+      border-color: rgba(201,168,76,.65);
+      box-shadow: 0 0 16px rgba(201,168,76,.2);
+    }
+    .select-btn:disabled {
+      opacity: .35;
+      cursor: default;
+    }
+  `],
+})
+export class CardDeckComponent implements OnChanges {
+  @Input() allCards:   TarotCard[] = [];
+  @Input() spreadSize              = 3;
+  @Output() selectionChange = new EventEmitter<CardSelectionItem[]>();
+
+  sliderVal = signal(0);
+  fillPct   = computed(() =>
+    (this.sliderVal() / Math.max(this.allCards.length - 1, 1)) * 100
+  );
+
+  rows        = signal<Slot[][]>([]);
+  selected    = signal<CardSelectionItem[]>([]);
+  removingSet = signal<Set<number>>(new Set());
+  removedSet  = signal<Set<number>>(new Set());
+
+  readonly ROW = 26;
+
+  ngOnChanges(c: SimpleChanges) {
+    if ((c['allCards'] && this.allCards.length) || c['spreadSize']) {
+      this.buildDeck();
+    }
+  }
+
+  // ── Public reset (called from parent when spread changes) ────────────────
+  public resetDeck() {
+    this.buildDeck();
+  }
+
+  // ── Shuffle + random offsets ─────────────────────────────────────────────
+  private buildDeck() {
+    const shuffled = [...this.allCards].sort(() => Math.random() - 0.5);
+    const slots: Slot[] = shuffled.map((card, idx) => ({
+      idx,
+      card,
+      ox: (Math.random() - 0.5) * 8,
+      oy: (Math.random() - 0.5) * 12,
+      or: (Math.random() - 0.5) * 10,
+    }));
+
+    const newRows: Slot[][] = [];
+    for (let r = 0; r < 3; r++) {
+      newRows.push(slots.slice(r * this.ROW, (r + 1) * this.ROW));
+    }
+
+    this.rows.set(newRows);
+    this.selected.set([]);
+    this.removingSet.set(new Set());
+    this.removedSet.set(new Set());
+    this.sliderVal.set(0);
+    this.emitSelection();
+  }
+
+  // ── Inline style per slot ────────────────────────────────────────────────
+  slotStyle(slot: Slot): string {
+    return [
+      `transform: translateX(${slot.ox}px) translateY(${slot.oy}px) rotate(${slot.or}deg)`,
+      `z-index: ${(slot.idx % this.ROW) + 1}`,
+    ].join('; ');
+  }
+
+  // ── Check if the highlighted card is already taken ───────────────────────
+  isHighlightedUnavailable(): boolean {
+    const t = this.sliderVal();
+    return this.removedSet().has(t) || this.removingSet().has(t);
+  }
+
+  // ── Click a card or select the highlighted one ───────────────────────────
+  clickCard(slot: Slot) {
+    if (
+      this.removingSet().has(slot.idx) ||
+      this.removedSet().has(slot.idx)  ||
+      this.selected().length >= this.spreadSize
+    ) return;
+
+    this.removingSet.update(s => { const n = new Set(s); n.add(slot.idx); return n; });
+    const reversed = Math.random() < 0.28;
+
+    setTimeout(() => {
+      this.removingSet.update(s => { const n = new Set(s); n.delete(slot.idx); return n; });
+      this.removedSet.update(s  => { const n = new Set(s); n.add(slot.idx);    return n; });
+      this.selected.update(arr  => [...arr, { card: slot.card, reversed }]);
+      this.emitSelection();
+    }, 280);
+  }
+
+  selectHighlighted() {
+    const target = this.sliderVal();
+    for (const row of this.rows()) {
+      const slot = row.find(s => s.idx === target);
+      if (slot) { this.clickCard(slot); break; }
+    }
+  }
+
+  // ── Return a card to the deck ────────────────────────────────────────────
+  returnCard(i: number) {
+    const item = this.selected()[i];
+    if (!item) return;
+
+    for (const row of this.rows()) {
+      const slot = row.find(s => s.card.card_id === item.card.card_id);
+      if (slot) {
+        this.removedSet.update(s => { const n = new Set(s); n.delete(slot.idx); return n; });
+        break;
+      }
+    }
+    this.selected.update(arr => arr.filter((_, ii) => ii !== i));
+    this.emitSelection();
+  }
+
+  // ── Slider ───────────────────────────────────────────────────────────────
+  onSlider(e: Event) {
+    const val = parseInt((e.target as HTMLInputElement).value, 10);
+    this.sliderVal.set(val);
+  }
+
+  private emitSelection() {
+    this.selectionChange.emit([...this.selected()]);
+  }
+}
