@@ -95,8 +95,8 @@ interface Slot {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
-      padding: 8px 0 4px;
+      gap: 10px;
+      padding: 8px 0 6px;
     }
     .card-row {
       display: flex;
@@ -107,13 +107,17 @@ interface Slot {
 
     /* ─── Card slot ──────────────────────────────────────────────────── */
     .s-card {
-      width:  46px;
-      height: 74px;
+      --cw: 40px;
+      --ch: 64px;
+      --overlap: -24px;
+
+      width:  var(--cw);
+      height: var(--ch);
       flex-shrink: 0;
-      border-radius: 6px;
+      border-radius: 5px;
       background: #1c0d3a;
       border: 1px solid rgba(201,168,76,.20);
-      margin-right: -28px;
+      margin-right: var(--overlap);
       position: relative;
       cursor: pointer;
       transition:
@@ -126,6 +130,19 @@ interface Slot {
       box-shadow: 0 2px 10px rgba(0,0,0,.55);
     }
     .s-card:last-child { margin-right: 0; }
+
+    /* ── Mobile: vw-based, fills edge-to-edge ─────────────────────── */
+    /* Formula: 20*cw - 19*overlap = ~100vw  →  cw≈11.6vw, overlap≈7vw  */
+    @media (max-width: 768px) {
+      .s-card {
+        --cw: 11.6vw;
+        --ch: 18.6vw;
+        --overlap: -7vw;
+        border-radius: 3px;
+      }
+      .s-card::after { font-size: 1.8vw; }
+      .deck-stage { gap: 8px; }
+    }
 
     .s-card:hover:not(.removing):not(.removed) {
       border-color: rgba(201,168,76,.45);
@@ -179,6 +196,7 @@ interface Slot {
     /* Phase 2 — collapse slot */
     .s-card.removed {
       width: 0 !important;
+      min-width: 0 !important;
       margin-right: 0 !important;
       opacity: 0 !important;
       border-width: 0 !important;
@@ -267,7 +285,7 @@ export class CardDeckComponent implements OnChanges {
   removingSet = signal<Set<number>>(new Set());
   removedSet  = signal<Set<number>>(new Set());
 
-  readonly ROW = 26;
+  readonly ROW = 20;
 
   ngOnChanges(c: SimpleChanges) {
     if ((c['allCards'] && this.allCards.length) || c['spreadSize']) {
@@ -292,8 +310,9 @@ export class CardDeckComponent implements OnChanges {
     }));
 
     const newRows: Slot[][] = [];
-    for (let r = 0; r < 3; r++) {
-      newRows.push(slots.slice(r * this.ROW, (r + 1) * this.ROW));
+    for (let r = 0; r < 4; r++) {
+      const row = slots.slice(r * this.ROW, (r + 1) * this.ROW);
+      if (row.length) newRows.push(row);
     }
 
     this.rows.set(newRows);
@@ -359,6 +378,12 @@ export class CardDeckComponent implements OnChanges {
     }
     this.selected.update(arr => arr.filter((_, ii) => ii !== i));
     this.emitSelection();
+  }
+
+  /** Return a card by its card_id (used by parent when slot is nulled) */
+  public returnCardById(cardId: string) {
+    const idx = this.selected().findIndex(item => item.card.card_id === cardId);
+    if (idx !== -1) this.returnCard(idx);
   }
 
   // ── Slider ───────────────────────────────────────────────────────────────

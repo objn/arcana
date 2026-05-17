@@ -20,8 +20,13 @@ html, body {
   background: var(--bg);
   font-family: 'Cormorant Garamond', serif;
   color: var(--text);
-  touch-action: none;
+  touch-action: pan-y;
   overflow: hidden;
+}
+
+app-root {
+  display: block;
+  height: 100%;
 }
 
 /* Scrollbar styling */

@@ -10,7 +10,6 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
   template: `
     <div class="auth-page">
-      <canvas id="bg"></canvas>
       <div class="auth-card">
         <div class="hdr-title">Arcana</div>
         <div class="hdr-sub">Tarot · Major Arcana</div>
@@ -41,9 +40,9 @@ import { AuthService } from '../../../core/services/auth.service';
   `,
   styles: [`
     @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
-    :host { display:block; }
-    .auth-page { min-height:100vh; display:flex; align-items:center; justify-content:center;
+    :host { display:flex; height:100%; align-items:center; justify-content:center;
       background:#0b0714; font-family:'Cormorant Garamond',serif; color:#e8d8b4; }
+    .auth-page { display:contents; }
     .auth-card { background:rgba(19,13,36,.95); border:1px solid rgba(201,168,76,.22);
       border-radius:18px; padding:40px 36px; width:min(400px,92vw); text-align:center;
       box-shadow:0 0 60px rgba(123,47,191,.3); }

@@ -10,7 +10,13 @@ import { TarotCard, SPREAD_CONFIGS } from '../../core/models/card.model';
 import { CardDeckComponent, CardSelectionItem } from './card-deck/card-deck.component';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-interface SpreadDef { key: string; label: string; size: number; icon: string; }
+interface SpreadDef { key: string; label: string; size: number; icon: string; desc?: string; }
+
+interface FreeflowExchange {
+  question: string;
+  items:    CardSelectionItem[];
+  meanings: Record<string, string>;
+}
 
 @Component({
   selector: 'app-reading',
@@ -36,8 +42,12 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       </div>
 
       <!-- ✦ Count badge — fixed top-right ─────────────────────────── -->
-      <div class="count-badge" [class.has-cards]="selectedItems().length > 0">
-        ✦ {{ selectedItems().length }}<span class="badge-of">/{{ spreadSize() }}</span>
+      <div class="count-badge" [class.has-cards]="selectedItems().length > 0 || (isFreeflow() && drawCount() > 0)">
+        @if (isFreeflow()) {
+          ∞ <span class="badge-of">{{ drawCount() }}/10</span>
+        } @else {
+          ✦ {{ selectedItems().length }}<span class="badge-of">/{{ spreadSize() }}</span>
+        }
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════
@@ -65,7 +75,7 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
               >
                 <span class="so-icon">{{ sp.icon }}</span>
                 <span class="so-label">{{ sp.label }}</span>
-                <span class="so-size">{{ sp.size }} card{{ sp.size > 1 ? 's' : '' }}</span>
+                <span class="so-size">{{ sp.desc ?? (sp.size + ' card' + (sp.size > 1 ? 's' : '')) }}</span>
               </button>
             }
           </div>
@@ -99,12 +109,18 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
           <div class="zh-title">Select Your Cards</div>
           <div class="zh-sub">
             {{ currentSpreadLabel() }} ·
-            Choose {{ spreadSize() }} card{{ spreadSize() > 1 ? 's' : '' }}
+            @if (isFreeflow()) {
+              Draw {{ drawCount() + 1 }} of 10 · {{ deckCards().length }} cards remaining
+            } @else if (nextPositionLabel()) {
+              Selecting: {{ nextPositionLabel() }}
+            } @else {
+              All cards selected
+            }
           </div>
         </div>
 
         <app-card-deck
-          [allCards]="allCards()"
+          [allCards]="deckCards()"
           [spreadSize]="spreadSize()"
           (selectionChange)="onSelectionChange($event)"
         />
@@ -130,35 +146,133 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       ══════════════════════════════════════════════════════════════ -->
       <section id="zone-reveal" class="zone zone-reveal">
 
+        <!-- ── Freeflow: ประวัติการทำนายก่อนหน้า ──────────────────── -->
+        @if (isFreeflow() && freeflowExchanges().length > 0) {
+          <div class="ff-history">
+            @for (ex of freeflowExchanges(); track $index; let ei = $index) {
+              <div class="ff-ex-wrap">
+
+                <!-- Draw N header -->
+                <div class="re-sep ff-ex-draw-sep">
+                  <div class="sep-line"></div>
+                  <div class="sep-label ff-ex-draw-num">∞ Draw {{ ei + 1 }}</div>
+                  <div class="sep-line"></div>
+                </div>
+
+                <!-- Question for this draw -->
+                @if (ex.question) {
+                  <div class="rv-question ff-ex-question">"{{ ex.question }}"</div>
+                }
+
+                <!-- Cards in same format as main reveal -->
+                @for (item of ex.items; track item.card.card_id; let i = $index) {
+                  <div class="re-entry visible ff-ex-entry">
+
+                    <!-- Position divider -->
+                    <div class="re-sep">
+                      <div class="sep-line"></div>
+                      <div class="sep-label">Your Card</div>
+                      <div class="sep-line"></div>
+                    </div>
+
+                    <!-- Card row -->
+                    <div class="re-row">
+
+                      <!-- Flip card — already revealed (statically flipped) -->
+                      <div class="flip-wrap">
+                        <div class="flip-inner flipped">
+                          <div class="flip-face flip-back"></div>
+                          <div
+                            class="flip-face flip-front"
+                            [class]="'suit-' + item.card.suit"
+                            [class.reversed]="item.reversed"
+                          >
+                            <img class="card-img" [src]="cardImageUrl(item.card.card_id)" [alt]="item.card.name" (error)="onImgError($event)">
+                            <div class="card-overlay">
+                              <div class="co-number">{{ item.card.number }}</div>
+                              <div class="co-glyph">✦</div>
+                              <div class="co-name">{{ item.card.name }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Meanings panel — already visible -->
+                      <div class="re-meanings visible">
+                        <div class="rm-name">{{ item.card.name }}</div>
+                        <div class="rm-orient" [class.rev]="item.reversed">
+                          {{ item.reversed ? '↑ Reversed' : '↓ Upright' }}
+                        </div>
+                        <div class="rm-keywords">
+                          {{ (item.reversed ? item.card.keywords_rev : item.card.keywords_up).join(' · ') }}
+                        </div>
+                        <div class="meaning-block">
+                          <div class="mb-label">Meaning</div>
+                          <div class="mb-text">{{ item.reversed ? item.card.meaning_rev : item.card.meaning_up }}</div>
+                        </div>
+                        @if (ex.question && ex.meanings[item.card.card_id]) {
+                          <div class="meaning-block">
+                            <div class="mb-label">In Context of Your Question</div>
+                            <div class="mb-text ai-text">{{ ex.meanings[item.card.card_id] }}</div>
+                          </div>
+                        }
+                      </div>
+
+                    </div>
+                  </div>
+                }
+
+              </div>
+            }
+            <div class="ff-history-rule"></div>
+          </div>
+        }
+
+        <!-- ── Freeflow: label รอบปัจจุบัน ────────────────────────── -->
+        @if (isFreeflow()) {
+          <div class="ff-draw-label">∞ Draw {{ drawCount() + 1 }} of 10</div>
+        }
+
         <!-- Question reminder -->
         @if (question) {
           <div class="rv-question">"{{ question }}"</div>
         }
 
-        <!-- Empty state -->
-        @if (selectedItems().length === 0) {
-          <div class="rv-empty">
-            <div class="rve-icon">✦</div>
-            <div>Select {{ spreadSize() }} card{{ spreadSize() > 1 ? 's' : '' }} from the deck above</div>
-            <button class="rve-back" (click)="scrollTo('zone-deck')">↑ Go to Deck</button>
-          </div>
-        }
-
-        <!-- Pre-reveal: face-down cards + button -->
-        @if (selectedItems().length >= spreadSize() && spreadSize() > 0 && !isRevealing() && revealedSet().size === 0) {
+        <!-- Pre-reveal: N position slots (placeholder or face-down) ────── -->
+        @if (!isRevealing() && revealedSet().size === 0) {
           <div class="facedown-wrap">
             <div class="facedown-row">
-              @for (item of selectedItems(); track item.card.card_id; let i = $index) {
+              @for (slot of selectedSlots(); track $index; let i = $index) {
                 <div class="fd-slot">
-                  <div class="fd-card">
-                    <div class="fd-back"></div>
-                  </div>
-                  <div class="fd-pos">{{ spreadPosition(i) }}</div>
-                  <button class="fd-return" (click)="returnCard(i)">Return</button>
+                  @if (slot !== null) {
+                    <!-- Filled slot: face-down card -->
+                    <div class="fd-card">
+                      <div class="fd-back"></div>
+                    </div>
+                    <div class="fd-pos">{{ spreadPosition(i) }}</div>
+                    <button class="fd-return" (click)="returnCard(i)">Return</button>
+                  } @else {
+                    <!-- Empty placeholder slot -->
+                    <div class="fd-card">
+                      <div class="fd-placeholder"></div>
+                    </div>
+                    <div class="fd-pos fd-pos-dim">{{ spreadPosition(i) }}</div>
+                  }
                 </div>
               }
             </div>
-            <button class="reveal-btn" (click)="startReveal()">✦ Reveal Reading</button>
+            @if (filledCount() >= spreadSize() && spreadSize() > 0) {
+              <button class="reveal-btn" (click)="startReveal()">✦ Reveal Reading</button>
+            } @else {
+              <button class="reveal-btn-ghost" (click)="scrollTo('zone-deck')">
+                @if (filledCount() === 0) {
+                  ↑ Go to Deck
+                } @else {
+                  ↑ {{ spreadSize() - filledCount() }} more
+                  card{{ (spreadSize() - filledCount()) > 1 ? 's' : '' }}
+                }
+              </button>
+            }
           </div>
         }
 
@@ -181,35 +295,24 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
                   <!-- 3D Flip Card -->
                   <div class="flip-wrap">
                     <div class="flip-inner" [class.flipped]="revealedSet().has(i)">
-
-                      <!-- Back face -->
                       <div class="flip-face flip-back"></div>
-
-                      <!-- Front face (card art) -->
                       <div
                         class="flip-face flip-front"
                         [class]="'suit-' + item.card.suit"
                         [class.reversed]="item.reversed"
                       >
-                        <img
-                          class="card-img"
-                          [src]="cardImageUrl(item.card.card_id)"
-                          [alt]="item.card.name"
-                          (error)="onImgError($event)"
-                        >
+                        <img class="card-img" [src]="cardImageUrl(item.card.card_id)" [alt]="item.card.name" (error)="onImgError($event)">
                         <div class="card-overlay">
                           <div class="co-number">{{ item.card.number }}</div>
                           <div class="co-glyph">✦</div>
                           <div class="co-name">{{ item.card.name }}</div>
                         </div>
                       </div>
+                    </div>
+                  </div>
 
-                    </div><!-- /flip-inner -->
-                  </div><!-- /flip-wrap -->
-
-                  <!-- Meanings (fade in after flip) -->
+                  <!-- Meanings -->
                   <div class="re-meanings" [class.visible]="revealedSet().has(i)">
-
                     <div class="rm-name">{{ item.card.name }}</div>
                     <div class="rm-orient" [class.rev]="item.reversed">
                       {{ item.reversed ? '↑ Reversed' : '↓ Upright' }}
@@ -217,16 +320,10 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
                     <div class="rm-keywords">
                       {{ (item.reversed ? item.card.keywords_rev : item.card.keywords_up).join(' · ') }}
                     </div>
-
-                    <!-- General meaning -->
                     <div class="meaning-block">
                       <div class="mb-label">Meaning</div>
-                      <div class="mb-text">
-                        {{ item.reversed ? item.card.meaning_rev : item.card.meaning_up }}
-                      </div>
+                      <div class="mb-text">{{ item.reversed ? item.card.meaning_rev : item.card.meaning_up }}</div>
                     </div>
-
-                    <!-- Question-specific meaning -->
                     @if (question) {
                       <div class="meaning-block">
                         <div class="mb-label">In Context of Your Question</div>
@@ -242,13 +339,12 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
                         }
                       </div>
                     }
-
-                  </div><!-- /re-meanings -->
-                </div><!-- /re-row -->
-              </div><!-- /re-entry -->
+                  </div>
+                </div>
+              </div>
             }
 
-            <!-- Save + Reset buttons after full reveal -->
+            <!-- Save + Reset buttons -->
             @if (allRevealed()) {
               <div class="after-reveal">
                 <div class="ar-rule"></div>
@@ -257,10 +353,19 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
                 } @else {
                   <div class="saved-msg">✓ Reading saved</div>
                 }
-                <button class="reset-btn" (click)="resetAll()">New Reading</button>
+                @if (isFreeflow()) {
+                  @if (drawCount() < 10) {
+                    <button class="next-q-btn" (click)="nextQuestion()">✦ ถามคำถามถัดไป</button>
+                  } @else {
+                    <div class="ff-limit">∞ Session complete — all 10 draws used</div>
+                  }
+                  <button class="reset-btn" (click)="resetAll()">End Session</button>
+                } @else {
+                  <button class="reset-btn" (click)="resetAll()">New Reading</button>
+                }
               </div>
             }
-          </div><!-- /reveal-entries -->
+          </div>
         }
 
       </section><!-- /zone-reveal -->
@@ -295,7 +400,8 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       z-index: 1;
     }
     .zone-start   { justify-content: center; padding: 0 16px; }
-    .zone-deck    { padding: 20px 0 16px; gap: 8px; overflow: hidden; }
+    .zone-deck    { justify-content: center; padding: 16px 0; gap: 14px; overflow: hidden; align-items: stretch; }
+    .zone-deck app-card-deck { width: 100%; }
     .zone-reveal  { padding: 28px 20px 60px; gap: 0; }
 
     /* ─── Hamburger ───────────────────────────────────────────────── */
@@ -320,12 +426,12 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       display: flex; flex-direction: column; gap: 2px;
     }
     .ham-head {
-      font-size: .58rem; letter-spacing: .25em; color: rgba(201,168,76,.40);
+      font-size: 0.58rem; letter-spacing: .25em; color: rgba(201,168,76,.40);
       text-transform: uppercase; padding: 4px 8px 8px;
       border-bottom: 1px solid rgba(201,168,76,.10); margin-bottom: 4px;
     }
     .ham-item {
-      display: block; font-family: inherit; font-size: .82rem;
+      display: block; font-family: inherit; font-size: 0.82rem;
       letter-spacing: .08em; color: #e8d8b4; background: none; border: none;
       border-radius: 8px; padding: 10px 12px; text-align: left;
       text-decoration: none; cursor: pointer; transition: background .2s;
@@ -338,7 +444,7 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       position: fixed; top: 14px; right: 14px; z-index: 2000;
       background: rgba(11,7,20,.90); border: 1px solid rgba(201,168,76,.25);
       border-radius: 20px; padding: 6px 14px;
-      font-size: .78rem; color: rgba(201,168,76,.40);
+      font-size: 0.78rem; color: rgba(201,168,76,.40);
       letter-spacing: .10em; backdrop-filter: blur(6px);
       transition: border-color .3s, color .3s, box-shadow .3s;
     }
@@ -360,7 +466,7 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       text-shadow: 0 0 28px rgba(201,168,76,.55), 0 0 60px rgba(123,47,191,.4);
     }
     .hdr-sub {
-      font-size: .65rem; letter-spacing: .4em; color: rgba(201,168,76,.35);
+      font-size: 0.65rem; letter-spacing: .4em; color: rgba(201,168,76,.35);
       text-transform: uppercase; margin-top: 5px;
     }
     .hdr-rule {
@@ -391,21 +497,21 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       box-shadow: 0 0 20px rgba(201,168,76,.15);
     }
     .so-icon  { font-size: 1.3rem; color: rgba(201,168,76,.70); }
-    .so-label { font-size: .78rem; color: #e8d8b4; letter-spacing: .04em; text-align: center; }
-    .so-size  { font-size: .60rem; color: rgba(201,168,76,.45); letter-spacing: .08em; }
+    .so-label { font-size: 0.78rem; color: #e8d8b4; letter-spacing: .04em; text-align: center; }
+    .so-size  { font-size: 0.6rem; color: rgba(201,168,76,.45); letter-spacing: .08em; }
 
     /* Question */
     .q-wrap { width: min(380px, 92vw); }
     .q-label {
-      font-size: .62rem; letter-spacing: .22em; color: rgba(201,168,76,.48);
+      font-size: 0.62rem; letter-spacing: .22em; color: rgba(201,168,76,.48);
       text-transform: uppercase; margin-bottom: 7px;
     }
-    .q-opt { color: rgba(201,168,76,.30); font-size: .55rem; }
+    .q-opt { color: rgba(201,168,76,.30); font-size: 0.55rem; }
     .q-input {
       width: 100%; box-sizing: border-box;
       background: rgba(255,255,255,.04); border: 1px solid rgba(201,168,76,.22);
       border-radius: 10px; padding: 11px 14px;
-      font-family: 'Cormorant Garamond', serif; font-size: .95rem; color: #e8d8b4;
+      font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: #e8d8b4;
       outline: none; transition: border-color .3s; caret-color: #c9a84c;
     }
     .q-input::placeholder { color: rgba(232,216,180,.35); font-style: italic; }
@@ -413,7 +519,7 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
 
     /* Begin button */
     .begin-btn {
-      font-family: 'Cinzel Decorative', serif; font-size: .76rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 0.76rem;
       letter-spacing: .18em; color: #0b0714;
       background: linear-gradient(135deg, #b8922e, #f0d87a, #b8922e);
       border: none; border-radius: 50px; padding: 14px 40px;
@@ -428,10 +534,10 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
     /* ─── Zone 2: Deck ────────────────────────────────────────────── */
     .zone-header { text-align: center; padding: 4px 0; }
     .zh-title {
-      font-family: 'Cinzel Decorative', serif; font-size: .88rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 0.88rem;
       letter-spacing: .16em; color: #f0d87a; text-transform: uppercase;
     }
-    .zh-sub { font-size: .68rem; color: rgba(201,168,76,.45); letter-spacing: .10em; margin-top: 4px; }
+    .zh-sub { font-size: 0.68rem; color: rgba(201,168,76,.45); letter-spacing: .10em; margin-top: 4px; }
 
     /* Progress dots */
     .deck-footer {
@@ -444,7 +550,7 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
     }
     .dp-dot.filled { background: #c9a84c; border-color: #c9a84c; }
     .scroll-cta {
-      font-family: inherit; font-size: .70rem; letter-spacing: .14em;
+      font-family: inherit; font-size: 0.7rem; letter-spacing: .14em;
       color: #c9a84c; background: rgba(201,168,76,.08);
       border: 1px solid rgba(201,168,76,.35); border-radius: 20px;
       padding: 7px 20px; cursor: pointer; transition: all .25s;
@@ -462,11 +568,11 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
     .rv-empty {
       display: flex; flex-direction: column; align-items: center;
       gap: 14px; padding: 60px 0; color: rgba(232,216,180,.30);
-      font-size: .88rem; letter-spacing: .06em; text-align: center;
+      font-size: 0.88rem; letter-spacing: .06em; text-align: center;
     }
     .rve-icon { font-size: 2.5rem; color: rgba(201,168,76,.20); }
     .rve-back {
-      font-family: inherit; font-size: .70rem; letter-spacing: .12em;
+      font-family: inherit; font-size: 0.7rem; letter-spacing: .12em;
       color: rgba(201,168,76,.50); background: none; border: 1px solid rgba(201,168,76,.25);
       border-radius: 20px; padding: 7px 18px; cursor: pointer; transition: all .25s;
     }
@@ -499,18 +605,34 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       font-size: 28px; color: rgba(201,168,76,.18);
     }
     .fd-pos {
-      font-size: .60rem; letter-spacing: .18em; color: rgba(201,168,76,.45);
+      font-size: 0.6rem; letter-spacing: .18em; color: rgba(201,168,76,.45);
       text-transform: uppercase;
     }
     .fd-return {
-      font-family: inherit; font-size: .60rem; color: rgba(232,216,180,.30);
+      font-family: inherit; font-size: 0.6rem; color: rgba(232,216,180,.30);
       background: none; border: 1px solid rgba(255,255,255,.06);
       border-radius: 6px; padding: 3px 10px; cursor: pointer; transition: all .2s;
     }
     .fd-return:hover { color: #c9a84c; border-color: rgba(201,168,76,.35); }
 
+    /* Placeholder (empty) slot */
+    .fd-placeholder {
+      width: 100px; height: 160px; border-radius: 10px;
+      border: 1.5px dashed rgba(201,168,76,.20);
+      background: rgba(201,168,76,.025);
+      position: relative;
+      box-shadow: inset 0 0 20px rgba(0,0,0,.25);
+    }
+    .fd-placeholder::after {
+      content: '?'; position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; color: rgba(201,168,76,.10);
+      font-family: 'Cormorant Garamond', serif;
+    }
+    .fd-pos-dim { color: rgba(201,168,76,.22) !important; }
+
     .reveal-btn {
-      font-family: 'Cinzel Decorative', serif; font-size: .78rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 0.78rem;
       letter-spacing: .18em; color: #0b0714;
       background: linear-gradient(135deg, #b8922e, #f0d87a, #b8922e);
       border: none; border-radius: 50px; padding: 15px 44px;
@@ -527,7 +649,7 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
     /* Separator */
     .re-sep { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .sep-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,.30), transparent); }
-    .sep-label { font-size: .60rem; letter-spacing: .28em; color: rgba(201,168,76,.50); text-transform: uppercase; white-space: nowrap; }
+    .sep-label { font-size: 0.6rem; letter-spacing: .28em; color: rgba(201,168,76,.50); text-transform: uppercase; white-space: nowrap; }
 
     /* Card row layout */
     .re-row { display: flex; gap: 24px; align-items: flex-start; }
@@ -591,9 +713,9 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       padding: 10px 6px;
       background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 55%);
     }
-    .co-number { font-size: .55rem; color: rgba(201,168,76,.70); letter-spacing: .15em; }
-    .co-glyph  { font-size: .85rem; color: rgba(201,168,76,.45); margin: 2px 0; }
-    .co-name   { font-size: .68rem; color: #f0d87a; letter-spacing: .06em; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+    .co-number { font-size: 0.55rem; color: rgba(201,168,76,.70); letter-spacing: .15em; }
+    .co-glyph  { font-size: 0.85rem; color: rgba(201,168,76,.45); margin: 2px 0; }
+    .co-name   { font-size: 0.68rem; color: #f0d87a; letter-spacing: .06em; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
 
     /* ─── Meanings panel ──────────────────────────────────────────── */
     .re-meanings {
@@ -605,31 +727,31 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
     .re-meanings.visible { opacity: 1; transform: none; pointer-events: auto; }
 
     .rm-name {
-      font-family: 'Cinzel Decorative', serif; font-size: .95rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 0.95rem;
       color: #f0d87a; letter-spacing: .10em; margin-bottom: 6px;
     }
     .rm-orient {
-      font-size: .65rem; letter-spacing: .12em; color: rgba(232,216,180,.50); margin-bottom: 6px;
+      font-size: 0.65rem; letter-spacing: .12em; color: rgba(232,216,180,.50); margin-bottom: 6px;
     }
     .rm-orient.rev { color: rgba(201,168,76,.65); }
     .rm-keywords {
-      font-size: .65rem; color: rgba(201,168,76,.45); letter-spacing: .06em;
+      font-size: 0.65rem; color: rgba(201,168,76,.45); letter-spacing: .06em;
       font-style: italic; margin-bottom: 16px;
       padding-bottom: 12px; border-bottom: 1px solid rgba(201,168,76,.12);
     }
 
     .meaning-block { margin-bottom: 14px; }
     .mb-label {
-      font-size: .58rem; letter-spacing: .22em; color: rgba(201,168,76,.45);
+      font-size: 0.58rem; letter-spacing: .22em; color: rgba(201,168,76,.45);
       text-transform: uppercase; margin-bottom: 6px;
     }
     .mb-text {
-      font-size: .84rem; color: rgba(232,216,180,.80); line-height: 1.65;
+      font-size: 0.84rem; color: rgba(232,216,180,.80); line-height: 1.65;
       letter-spacing: .02em;
     }
     .ai-text { color: #e8d8b4; }
     .mb-loading {
-      font-size: .75rem; color: rgba(201,168,76,.40); letter-spacing: .08em;
+      font-size: 0.75rem; color: rgba(201,168,76,.40); letter-spacing: .08em;
       display: flex; align-items: center; gap: 6px;
     }
     .loading-dot {
@@ -655,7 +777,7 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       margin-bottom: 8px;
     }
     .save-btn {
-      font-family: 'Cormorant Garamond', serif; font-size: .78rem;
+      font-family: 'Cormorant Garamond', serif; font-size: 0.78rem;
       letter-spacing: .16em; color: #0b0714;
       background: linear-gradient(135deg, #b8922e, #f0d87a, #b8922e);
       border: none; border-radius: 50px; padding: 12px 36px;
@@ -663,14 +785,82 @@ interface SpreadDef { key: string; label: string; size: number; icon: string; }
       transition: box-shadow .3s, transform .2s; text-transform: uppercase;
     }
     .save-btn:hover { box-shadow: 0 6px 28px rgba(201,168,76,.50); transform: translateY(-1px); }
-    .saved-msg { font-size: .78rem; color: rgba(201,168,76,.70); letter-spacing: .14em; }
+    .saved-msg { font-size: 0.78rem; color: rgba(201,168,76,.70); letter-spacing: .14em; }
     .reset-btn {
-      font-family: 'Cormorant Garamond', serif; font-size: .72rem;
+      font-family: 'Cormorant Garamond', serif; font-size: 0.72rem;
       letter-spacing: .14em; color: rgba(232,216,180,.45); background: none;
       border: 1px solid rgba(255,255,255,.10); border-radius: 20px;
       padding: 8px 22px; cursor: pointer; transition: all .25s;
     }
     .reset-btn:hover { color: #c9a84c; border-color: rgba(201,168,76,.35); }
+
+    /* ─── Freeflow history ───────────────────────────────────────── */
+    .ff-history {
+      width: min(680px, 96vw);
+      display: flex; flex-direction: column; gap: 0;
+      margin-bottom: 8px;
+    }
+    .ff-ex-wrap {
+      display: flex; flex-direction: column; align-items: center;
+      width: 100%;
+      padding: 20px 0 4px;
+      opacity: .78;
+      transition: opacity .3s;
+    }
+    .ff-ex-wrap:hover { opacity: 1; }
+    /* "∞ Draw N" — purple to distinguish from current reading */
+    .ff-ex-draw-num { color: rgba(123,47,191,.80) !important; }
+    /* Question shown above cards */
+    .ff-ex-question {
+      font-size: .92rem !important;
+      padding-bottom: 10px !important;
+      margin-bottom: 4px !important;
+    }
+    /* History card entries — bypass enter animation, full width */
+    .ff-ex-entry {
+      opacity: 1 !important;
+      transform: none !important;
+      padding: 16px 0;
+      width: 100%;
+    }
+    .ff-history-rule {
+      width: 100%; height: 1px; margin-top: 12px; margin-bottom: 4px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,.40), transparent);
+    }
+    .ff-draw-label {
+      font-size: .62rem; letter-spacing: .22em; color: rgba(123,47,191,.80);
+      text-transform: uppercase; margin-bottom: 4px;
+    }
+
+    /* ── reveal-btn-ghost: "Select X more" ───────────────────── */
+    .reveal-btn-ghost {
+      font-family: 'Cormorant Garamond', serif; font-size: .78rem;
+      letter-spacing: .14em; color: rgba(201,168,76,.60);
+      background: rgba(201,168,76,.06);
+      border: 1px dashed rgba(201,168,76,.30); border-radius: 50px;
+      padding: 13px 36px; cursor: pointer; transition: all .25s;
+    }
+    .reveal-btn-ghost:hover {
+      color: #c9a84c; border-color: rgba(201,168,76,.55);
+      background: rgba(201,168,76,.12);
+    }
+
+    /* ─── Freeflow ────────────────────────────────────────────────── */
+    .next-q-btn {
+      font-family: 'Cinzel Decorative', serif; font-size: 0.74rem;
+      letter-spacing: .16em; color: #0b0714;
+      background: linear-gradient(135deg, #4a0d9e, #7b2fbf, #4a0d9e);
+      border: none; border-radius: 50px; padding: 14px 40px;
+      cursor: pointer; box-shadow: 0 4px 22px rgba(123,47,191,.45);
+      transition: box-shadow .3s, transform .3s; text-transform: uppercase;
+    }
+    .next-q-btn:hover {
+      box-shadow: 0 6px 32px rgba(123,47,191,.65); transform: translateY(-2px);
+    }
+    .ff-limit {
+      font-size: 0.7rem; color: rgba(201,168,76,.55);
+      letter-spacing: .14em; font-style: italic;
+    }
   `],
 })
 export class ReadingComponent implements OnInit {
@@ -687,8 +877,29 @@ export class ReadingComponent implements OnInit {
   spreadSize = computed(() => SPREAD_CONFIGS[this.spreadType()]?.size ?? 1);
   question   = '';
 
-  // ── Zone 2: Selection ───────────────────────────────────────────────────
-  selectedItems = signal<CardSelectionItem[]>([]);
+  // ── Zone 2: Selection (slot-based) ──────────────────────────────────────
+  private _suppressDeckCallback = false;
+  private _prevDeckItems: CardSelectionItem[] = [];
+
+  /** N locked positions — null = empty placeholder, non-null = chosen card */
+  selectedSlots = signal<(CardSelectionItem | null)[]>([null, null, null]);
+
+  /** Compact array of non-null chosen cards (in slot order) */
+  selectedItems = computed<CardSelectionItem[]>(() =>
+    this.selectedSlots().filter((s): s is CardSelectionItem => s !== null)
+  );
+
+  /** How many slots are currently filled */
+  filledCount = computed(() => this.selectedItems().length);
+
+  /** Index of the next empty slot (-1 if all filled) */
+  nextSlotIndex = computed(() => this.selectedSlots().findIndex(s => s === null));
+
+  /** Position label for the next empty slot (null when all filled) */
+  nextPositionLabel = computed(() => {
+    const i = this.nextSlotIndex();
+    return i === -1 ? null : this.spreadPosition(i);
+  });
 
   // ── Zone 3: Reveal ──────────────────────────────────────────────────────
   revealedSet      = signal<Set<number>>(new Set());
@@ -705,16 +916,29 @@ export class ReadingComponent implements OnInit {
     Array.from({ length: this.spreadSize() }, (_, i) => i)
   );
 
+  // ── Freeflow mode ───────────────────────────────────────────────────────
+  isFreeflow        = computed(() => this.spreadType() === 'freeflow');
+  drawCount         = signal(0);
+  freeflowDrawnIds  = signal<Set<string>>(new Set());
+  freeflowExchanges = signal<FreeflowExchange[]>([]);
+  /** Cards available for the current draw — full deck normally, pruned in freeflow */
+  deckCards        = computed<TarotCard[]>(() => {
+    if (!this.isFreeflow()) return this.allCards();
+    const drawn = this.freeflowDrawnIds();
+    return this.allCards().filter(c => !drawn.has(c.card_id));
+  });
+
   // ── UI ──────────────────────────────────────────────────────────────────
   menuOpen    = signal(false);
   /** Active card art theme — matches folder under /assets/cards/{theme}/ */
   cardTheme   = signal<string>('original');
 
   readonly spreads: SpreadDef[] = [
-    { key: 'single',       label: 'Single Card',             size: 1,  icon: '✦'    },
-    { key: 'three_card',   label: 'Past · Present · Future', size: 3,  icon: '◈◈◈'  },
-    { key: 'horseshoe',    label: 'Horseshoe',               size: 7,  icon: '◐◑◐'  },
-    { key: 'celtic_cross', label: 'Celtic Cross',            size: 10, icon: '✚'    },
+    { key: 'single',       label: 'Single Card',             size: 1,  icon: '✦'               },
+    { key: 'three_card',   label: 'Past · Present · Future', size: 3,  icon: '◈◈◈'              },
+    { key: 'horseshoe',    label: 'Horseshoe',               size: 7,  icon: '◐◑◐'              },
+    { key: 'celtic_cross', label: 'Celtic Cross',            size: 10, icon: '✚'               },
+    { key: 'freeflow',     label: 'Freeflow',                size: 1,  icon: '∞', desc: 'up to 10 draws' },
   ];
 
   currentSpreadLabel = computed(() =>
@@ -733,18 +957,60 @@ export class ReadingComponent implements OnInit {
   // ── Spread selection: reset everything ──────────────────────────────────
   selectSpread(key: string) {
     this.spreadType.set(key);
-    this.selectedItems.set([]);
+    const size = SPREAD_CONFIGS[key]?.size ?? 1;
+    this.selectedSlots.set(Array(size).fill(null));
+    this._prevDeckItems = [];
     this.revealedSet.set(new Set());
     this.isRevealing.set(false);
     this.questionMeanings.set({});
     this.isSaved.set(false);
-    // card-deck resets automatically via ngOnChanges([spreadSize])
+    this.drawCount.set(0);
+    this.freeflowDrawnIds.set(new Set());
+    // card-deck resets automatically via ngOnChanges([allCards/spreadSize])
   }
 
   onSelectionChange(items: CardSelectionItem[]) {
-    this.selectedItems.set(items);
-    // Reset reveal if they change their selection
-    if (this.revealedSet().size > 0 || this.isRevealing()) {
+    // Suppress is set when we triggered the deck change ourselves (returnCard)
+    if (this._suppressDeckCallback) {
+      this._suppressDeckCallback = false;
+      this._prevDeckItems = [...items];
+      return;
+    }
+
+    const prevIds = new Set(this._prevDeckItems.map(i => i.card.card_id));
+    const newIds  = new Set(items.map(i => i.card.card_id));
+
+    // Detect newly added card → fill next null slot
+    const added = items.find(i => !prevIds.has(i.card.card_id));
+    if (added) {
+      const nextIdx = this.selectedSlots().findIndex(s => s === null);
+      if (nextIdx !== -1) {
+        this.selectedSlots.update(arr => {
+          const n = [...arr];
+          n[nextIdx] = added;
+          return n;
+        });
+      }
+    }
+
+    // Detect removed card (deck-side return, shouldn't normally occur with
+    // slot architecture, but handle gracefully)
+    const removedId = this._prevDeckItems.find(i => !newIds.has(i.card.card_id))?.card.card_id;
+    if (removedId) {
+      const slotIdx = this.selectedSlots().findIndex(s => s?.card.card_id === removedId);
+      if (slotIdx !== -1) {
+        this.selectedSlots.update(arr => {
+          const n = [...arr];
+          n[slotIdx] = null;
+          return n;
+        });
+      }
+    }
+
+    this._prevDeckItems = [...items];
+
+    // Reset reveal state if selection changed
+    if ((added || removedId) && (this.revealedSet().size > 0 || this.isRevealing())) {
       this.revealedSet.set(new Set());
       this.isRevealing.set(false);
       this.questionMeanings.set({});
@@ -752,11 +1018,31 @@ export class ReadingComponent implements OnInit {
     }
   }
 
-  returnCard(i: number) {
-    this.deckRef?.returnCard(i);
+  returnCard(slotIndex: number) {
+    const item = this.selectedSlots()[slotIndex];
+    if (!item) return;
+
+    // 1. Null out the slot immediately
+    this.selectedSlots.update(arr => {
+      const n = [...arr];
+      n[slotIndex] = null;
+      return n;
+    });
+
+    // 2. Reset reveal state
+    this.revealedSet.set(new Set());
+    this.isRevealing.set(false);
+    this.questionMeanings.set({});
+    this.isSaved.set(false);
+
+    // 3. Tell the deck to un-select this card (suppress the echo callback)
+    this._suppressDeckCallback = true;
+    this._prevDeckItems = this._prevDeckItems.filter(i => i.card.card_id !== item.card.card_id);
+    this.deckRef?.returnCardById(item.card.card_id);
   }
 
   spreadPosition(i: number): string {
+    if (this.isFreeflow()) return 'Your Card';
     return SPREAD_CONFIGS[this.spreadType()]?.positions[i] ?? `Card ${i + 1}`;
   }
 
@@ -828,14 +1114,65 @@ export class ReadingComponent implements OnInit {
     });
   }
 
+  // ── Freeflow: advance to next question (keep deck pool) ─────────────────
+  nextQuestion() {
+    const items   = this.selectedItems();
+    const meanings = this.questionMeanings();
+
+    // 1. บันทึก exchange ปัจจุบันลง history
+    this.freeflowExchanges.update(arr => [
+      ...arr,
+      { question: this.question, items: [...items], meanings: { ...meanings } },
+    ]);
+
+    // 2. Auto-save ลง backend
+    if (items.length > 0) {
+      this.api.createReading({
+        question:    this.question || undefined,
+        spread_type: 'freeflow',
+        drawn_cards: items.map((item, i) => ({
+          card_id:  item.card.card_id,
+          position: this.spreadPosition(i),
+          reversed: item.reversed,
+        })),
+      }).subscribe();
+    }
+
+    // 3. Permanently remove drawn cards from pool
+    items.forEach(item => {
+      this.freeflowDrawnIds.update(s => {
+        const n = new Set(s); n.add(item.card.card_id); return n;
+      });
+    });
+
+    // 4. Advance counter
+    this.drawCount.update(n => n + items.length);
+
+    // 5. Clear reading state (deckCards computed auto-rebuilds reduced deck)
+    this.question = '';
+    this.selectedSlots.set(Array(this.spreadSize()).fill(null));
+    this._prevDeckItems = [];
+    this.revealedSet.set(new Set());
+    this.isRevealing.set(false);
+    this.questionMeanings.set({});
+    this.isSaved.set(false);
+
+    // 6. Scroll back to question zone
+    this.scrollTo('zone-start');
+  }
+
   // ── Reset ───────────────────────────────────────────────────────────────
   resetAll() {
-    this.selectedItems.set([]);
+    this.selectedSlots.set(Array(this.spreadSize()).fill(null));
+    this._prevDeckItems = [];
     this.revealedSet.set(new Set());
     this.isRevealing.set(false);
     this.questionMeanings.set({});
     this.isSaved.set(false);
     this.question = '';
+    this.drawCount.set(0);
+    this.freeflowDrawnIds.set(new Set());
+    this.freeflowExchanges.set([]);
     this.deckRef?.resetDeck();
     this.scrollTo('zone-start');
   }

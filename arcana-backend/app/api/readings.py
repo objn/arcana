@@ -10,8 +10,8 @@ from app.schemas.reading import ReadingCreate, ReadingOut, ReadingListOut
 from app.api.deps import get_current_user
 from app.data.cards import CARDS_BY_ID
 
-VALID_SPREADS = {"single", "three_card", "celtic_cross", "horseshoe"}
-SPREAD_SIZES  = {"single": 1, "three_card": 3, "celtic_cross": 10, "horseshoe": 7}
+VALID_SPREADS = {"single", "three_card", "celtic_cross", "horseshoe", "freeflow"}
+SPREAD_SIZES  = {"single": 1, "three_card": 3, "celtic_cross": 10, "horseshoe": 7, "freeflow": 1}
 
 router = APIRouter(prefix="/readings", tags=["readings"])
 
