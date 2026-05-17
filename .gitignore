@@ -1,0 +1,7 @@
+arcana-frontend\node_modules
+arcana-frontend\.angular
+
+arcana-backend\.venv
+arcana-backend\__pycache__
+arcana-backend\*.pyc
+arcana-backend\.env
