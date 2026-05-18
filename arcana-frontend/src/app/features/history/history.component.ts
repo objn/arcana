@@ -13,17 +13,17 @@ import { SPREAD_CONFIGS } from '../../core/models/card.model';
     <div class="history-page">
       <div class="hdr">
         <div class="hdr-title">Arcana</div>
-        <div class="hdr-sub">ประวัติการดูดวง</div>
+        <div class="hdr-sub">History</div>
         <div class="hdr-rule"></div>
-        <a routerLink="/reading" class="back-btn">← กลับไปดูดวง</a>
+        <a routerLink="/reading" class="back-btn">← Back to Reading</a>
       </div>
 
       @if (loading()) {
-        <div class="loading">กำลังโหลด…</div>
+        <div class="loading">Loading…</div>
       }
 
       @if (!loading() && readings().length === 0) {
-        <div class="empty">ยังไม่มีประวัติการดูดวงค่ะ</div>
+        <div class="empty">You haven't done any readings yet.</div>
       }
 
       <div class="readings-list">
@@ -45,7 +45,7 @@ import { SPREAD_CONFIGS } from '../../core/models/card.model';
                 </div>
               }
             </div>
-            <button class="delete-btn" (click)="deleteReading(r.id)">ลบ</button>
+            <button class="delete-btn" (click)="deleteReading(r.id)">Delete</button>
           </div>
         }
       </div>

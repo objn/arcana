@@ -12,21 +12,21 @@ import { AuthService } from '../../../core/services/auth.service';
     <div class="auth-page">
       <div class="auth-card">
         <div class="hdr-title">Arcana</div>
-        <div class="hdr-sub">สมัครสมาชิก</div>
+        <div class="hdr-sub">Sign up</div>
         <div class="hdr-rule"></div>
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
           <div class="field">
-            <label>ชื่อผู้ใช้</label>
+            <label>Username</label>
             <input type="text" formControlName="username" placeholder="username">
           </div>
           <div class="field">
-            <label>อีเมล</label>
+            <label>Email</label>
             <input type="email" formControlName="email" placeholder="your@email.com">
           </div>
           <div class="field">
-            <label>รหัสผ่าน</label>
-            <input type="password" formControlName="password" placeholder="อย่างน้อย 6 ตัวอักษร">
+            <label>Password</label>
+            <input type="password" formControlName="password" placeholder="at least 6 characters">
           </div>
 
           @if (error()) {
@@ -34,11 +34,11 @@ import { AuthService } from '../../../core/services/auth.service';
           }
 
           <button type="submit" class="draw-btn" [disabled]="loading() || form.invalid">
-            {{ loading() ? 'กำลังสมัคร…' : '✦ สมัครสมาชิก ✦' }}
+            {{ loading() ? 'Signing up…' : '✦ Sign up ✦' }}
           </button>
         </form>
 
-        <p class="auth-link">มีบัญชีแล้ว? <a routerLink="/login">เข้าสู่ระบบ</a></p>
+        <p class="auth-link">Already have an account?  <a routerLink="/login">Sign in</a></p>
       </div>
     </div>
   `,
@@ -95,7 +95,7 @@ export class RegisterComponent {
     this.auth.register(email!, username!, password!).subscribe({
       next: () => this.router.navigate(['/reading']),
       error: (err) => {
-        this.error.set(err.error?.detail || 'สมัครสมาชิกไม่สำเร็จ');
+        this.error.set(err.error?.detail || 'Sign upไม่สำเร็จ');
         this.loading.set(false);
       },
     });

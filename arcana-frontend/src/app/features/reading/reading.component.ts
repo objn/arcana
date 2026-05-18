@@ -35,8 +35,8 @@ interface FreeflowExchange {
           <div class="ham-backdrop" (click)="menuOpen.set(false)"></div>
           <div class="ham-drawer">
             <div class="ham-head">Menu</div>
-            <a class="ham-item" routerLink="/history" (click)="menuOpen.set(false)">♦ ประวัติการดูดวง</a>
-            <button class="ham-item ham-logout" (click)="logout()">↪ ออกจากระบบ</button>
+            <a class="ham-item" routerLink="/history" (click)="menuOpen.set(false)">♦ History</a>
+            <button class="ham-item ham-logout" (click)="logout()">↪ Sign out</button>
           </div>
         }
       </div>
@@ -426,12 +426,12 @@ interface FreeflowExchange {
       display: flex; flex-direction: column; gap: 2px;
     }
     .ham-head {
-      font-size: 0.58rem; letter-spacing: .25em; color: rgba(201,168,76,.40);
+      font-size: 0.7029rem; letter-spacing: .25em; color: rgba(201,168,76,.40);
       text-transform: uppercase; padding: 4px 8px 8px;
       border-bottom: 1px solid rgba(201,168,76,.10); margin-bottom: 4px;
     }
     .ham-item {
-      display: block; font-family: inherit; font-size: 0.82rem;
+      display: block; font-family: inherit; font-size: 0.9857rem;
       letter-spacing: .08em; color: #e8d8b4; background: none; border: none;
       border-radius: 8px; padding: 10px 12px; text-align: left;
       text-decoration: none; cursor: pointer; transition: background .2s;
@@ -444,7 +444,7 @@ interface FreeflowExchange {
       position: fixed; top: 14px; right: 14px; z-index: 2000;
       background: rgba(11,7,20,.90); border: 1px solid rgba(201,168,76,.25);
       border-radius: 20px; padding: 6px 14px;
-      font-size: 0.78rem; color: rgba(201,168,76,.40);
+      font-size: 0.9343rem; color: rgba(201,168,76,.40);
       letter-spacing: .10em; backdrop-filter: blur(6px);
       transition: border-color .3s, color .3s, box-shadow .3s;
     }
@@ -461,12 +461,12 @@ interface FreeflowExchange {
     }
     .hdr { text-align: center; }
     .hdr-title {
-      font-family: 'Cinzel Decorative', serif; font-size: 1.7rem; color: #f0d87a;
+      font-family: 'Cinzel Decorative', serif; font-size: 2.04rem; color: #f0d87a;
       letter-spacing: .14em;
       text-shadow: 0 0 28px rgba(201,168,76,.55), 0 0 60px rgba(123,47,191,.4);
     }
     .hdr-sub {
-      font-size: 0.65rem; letter-spacing: .4em; color: rgba(201,168,76,.35);
+      font-size: 0.7886rem; letter-spacing: .4em; color: rgba(201,168,76,.35);
       text-transform: uppercase; margin-top: 5px;
     }
     .hdr-rule {
@@ -475,7 +475,7 @@ interface FreeflowExchange {
       margin: 10px auto 0; opacity: .45;
     }
     .start-prompt {
-      font-size: 1.05rem; color: rgba(232,216,180,.65); letter-spacing: .05em;
+      font-size: 1.2686rem; color: rgba(232,216,180,.65); letter-spacing: .05em;
       font-style: italic;
     }
 
@@ -496,22 +496,22 @@ interface FreeflowExchange {
       background: rgba(201,168,76,.12); border-color: rgba(201,168,76,.65);
       box-shadow: 0 0 20px rgba(201,168,76,.15);
     }
-    .so-icon  { font-size: 1.3rem; color: rgba(201,168,76,.70); }
-    .so-label { font-size: 0.78rem; color: #e8d8b4; letter-spacing: .04em; text-align: center; }
-    .so-size  { font-size: 0.6rem; color: rgba(201,168,76,.45); letter-spacing: .08em; }
+    .so-icon  { font-size: 1.56rem; color: rgba(201,168,76,.70); }
+    .so-label { font-size: 0.9343rem; color: #e8d8b4; letter-spacing: .04em; text-align: center; }
+    .so-size  { font-size: 0.72rem; color: rgba(201,168,76,.45); letter-spacing: .08em; }
 
     /* Question */
     .q-wrap { width: min(380px, 92vw); }
     .q-label {
-      font-size: 0.62rem; letter-spacing: .22em; color: rgba(201,168,76,.48);
+      font-size: 0.7371rem; letter-spacing: .22em; color: rgba(201,168,76,.48);
       text-transform: uppercase; margin-bottom: 7px;
     }
-    .q-opt { color: rgba(201,168,76,.30); font-size: 0.55rem; }
+    .q-opt { color: rgba(201,168,76,.30); font-size: 0.6686rem; }
     .q-input {
       width: 100%; box-sizing: border-box;
       background: rgba(255,255,255,.04); border: 1px solid rgba(201,168,76,.22);
       border-radius: 10px; padding: 11px 14px;
-      font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: #e8d8b4;
+      font-family: 'Cormorant Garamond', serif; font-size: 1.1486rem; color: #e8d8b4;
       outline: none; transition: border-color .3s; caret-color: #c9a84c;
     }
     .q-input::placeholder { color: rgba(232,216,180,.35); font-style: italic; }
@@ -519,7 +519,7 @@ interface FreeflowExchange {
 
     /* Begin button */
     .begin-btn {
-      font-family: 'Cinzel Decorative', serif; font-size: 0.76rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 0.9171rem;
       letter-spacing: .18em; color: #0b0714;
       background: linear-gradient(135deg, #b8922e, #f0d87a, #b8922e);
       border: none; border-radius: 50px; padding: 14px 40px;
@@ -534,10 +534,10 @@ interface FreeflowExchange {
     /* ─── Zone 2: Deck ────────────────────────────────────────────── */
     .zone-header { text-align: center; padding: 4px 0; }
     .zh-title {
-      font-family: 'Cinzel Decorative', serif; font-size: 0.88rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 1.0629rem;
       letter-spacing: .16em; color: #f0d87a; text-transform: uppercase;
     }
-    .zh-sub { font-size: 0.68rem; color: rgba(201,168,76,.45); letter-spacing: .10em; margin-top: 4px; }
+    .zh-sub { font-size: 0.8143rem; color: rgba(201,168,76,.45); letter-spacing: .10em; margin-top: 4px; }
 
     /* Progress dots */
     .deck-footer {
@@ -550,7 +550,7 @@ interface FreeflowExchange {
     }
     .dp-dot.filled { background: #c9a84c; border-color: #c9a84c; }
     .scroll-cta {
-      font-family: inherit; font-size: 0.7rem; letter-spacing: .14em;
+      font-family: inherit; font-size: 0.84rem; letter-spacing: .14em;
       color: #c9a84c; background: rgba(201,168,76,.08);
       border: 1px solid rgba(201,168,76,.35); border-radius: 20px;
       padding: 7px 20px; cursor: pointer; transition: all .25s;
@@ -560,7 +560,7 @@ interface FreeflowExchange {
     /* ─── Zone 3: Reveal ──────────────────────────────────────────── */
     .rv-question {
       width: min(560px, 92vw); text-align: center;
-      font-size: 1.05rem; color: rgba(232,216,180,.55); font-style: italic;
+      font-size: 1.2686rem; color: rgba(232,216,180,.55); font-style: italic;
       padding: 0 0 16px; letter-spacing: .04em;
       border-bottom: 1px solid rgba(201,168,76,.12); margin-bottom: 8px;
     }
@@ -568,11 +568,11 @@ interface FreeflowExchange {
     .rv-empty {
       display: flex; flex-direction: column; align-items: center;
       gap: 14px; padding: 60px 0; color: rgba(232,216,180,.30);
-      font-size: 0.88rem; letter-spacing: .06em; text-align: center;
+      font-size: 1.0629rem; letter-spacing: .06em; text-align: center;
     }
-    .rve-icon { font-size: 2.5rem; color: rgba(201,168,76,.20); }
+    .rve-icon { font-size: 3.0rem; color: rgba(201,168,76,.20); }
     .rve-back {
-      font-family: inherit; font-size: 0.7rem; letter-spacing: .12em;
+      font-family: inherit; font-size: 0.84rem; letter-spacing: .12em;
       color: rgba(201,168,76,.50); background: none; border: 1px solid rgba(201,168,76,.25);
       border-radius: 20px; padding: 7px 18px; cursor: pointer; transition: all .25s;
     }
@@ -602,14 +602,14 @@ interface FreeflowExchange {
     .fd-back::after {
       content: '✦'; position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px; color: rgba(201,168,76,.18);
+      font-size: 33.43px; color: rgba(201,168,76,.18);
     }
     .fd-pos {
-      font-size: 0.6rem; letter-spacing: .18em; color: rgba(201,168,76,.45);
+      font-size: 0.72rem; letter-spacing: .18em; color: rgba(201,168,76,.45);
       text-transform: uppercase;
     }
     .fd-return {
-      font-family: inherit; font-size: 0.6rem; color: rgba(232,216,180,.30);
+      font-family: inherit; font-size: 0.72rem; color: rgba(232,216,180,.30);
       background: none; border: 1px solid rgba(255,255,255,.06);
       border-radius: 6px; padding: 3px 10px; cursor: pointer; transition: all .2s;
     }
@@ -626,13 +626,13 @@ interface FreeflowExchange {
     .fd-placeholder::after {
       content: '?'; position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 28px; color: rgba(201,168,76,.10);
+      font-size: 33.43px; color: rgba(201,168,76,.10);
       font-family: 'Cormorant Garamond', serif;
     }
     .fd-pos-dim { color: rgba(201,168,76,.22) !important; }
 
     .reveal-btn {
-      font-family: 'Cinzel Decorative', serif; font-size: 0.78rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 0.9343rem;
       letter-spacing: .18em; color: #0b0714;
       background: linear-gradient(135deg, #b8922e, #f0d87a, #b8922e);
       border: none; border-radius: 50px; padding: 15px 44px;
@@ -649,7 +649,7 @@ interface FreeflowExchange {
     /* Separator */
     .re-sep { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
     .sep-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(201,168,76,.30), transparent); }
-    .sep-label { font-size: 0.6rem; letter-spacing: .28em; color: rgba(201,168,76,.50); text-transform: uppercase; white-space: nowrap; }
+    .sep-label { font-size: 0.72rem; letter-spacing: .28em; color: rgba(201,168,76,.50); text-transform: uppercase; white-space: nowrap; }
 
     /* Card row layout */
     .re-row { display: flex; gap: 24px; align-items: flex-start; }
@@ -682,7 +682,7 @@ interface FreeflowExchange {
     .flip-back::after {
       content: '✦'; position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
-      font-size: 36px; color: rgba(201,168,76,.22);
+      font-size: 43.71px; color: rgba(201,168,76,.22);
     }
 
     /* Card front */
@@ -713,9 +713,9 @@ interface FreeflowExchange {
       padding: 10px 6px;
       background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 55%);
     }
-    .co-number { font-size: 0.55rem; color: rgba(201,168,76,.70); letter-spacing: .15em; }
-    .co-glyph  { font-size: 0.85rem; color: rgba(201,168,76,.45); margin: 2px 0; }
-    .co-name   { font-size: 0.68rem; color: #f0d87a; letter-spacing: .06em; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+    .co-number { font-size: 0.6686rem; color: rgba(201,168,76,.70); letter-spacing: .15em; }
+    .co-glyph  { font-size: 1.0286rem; color: rgba(201,168,76,.45); margin: 2px 0; }
+    .co-name   { font-size: 0.8143rem; color: #f0d87a; letter-spacing: .06em; text-align: center; text-shadow: 0 1px 4px rgba(0,0,0,.8); }
 
     /* ─── Meanings panel ──────────────────────────────────────────── */
     .re-meanings {
@@ -727,31 +727,31 @@ interface FreeflowExchange {
     .re-meanings.visible { opacity: 1; transform: none; pointer-events: auto; }
 
     .rm-name {
-      font-family: 'Cinzel Decorative', serif; font-size: 0.95rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 1.1486rem;
       color: #f0d87a; letter-spacing: .10em; margin-bottom: 6px;
     }
     .rm-orient {
-      font-size: 0.65rem; letter-spacing: .12em; color: rgba(232,216,180,.50); margin-bottom: 6px;
+      font-size: 0.7886rem; letter-spacing: .12em; color: rgba(232,216,180,.50); margin-bottom: 6px;
     }
     .rm-orient.rev { color: rgba(201,168,76,.65); }
     .rm-keywords {
-      font-size: 0.65rem; color: rgba(201,168,76,.45); letter-spacing: .06em;
+      font-size: 0.7886rem; color: rgba(201,168,76,.45); letter-spacing: .06em;
       font-style: italic; margin-bottom: 16px;
       padding-bottom: 12px; border-bottom: 1px solid rgba(201,168,76,.12);
     }
 
     .meaning-block { margin-bottom: 14px; }
     .mb-label {
-      font-size: 0.58rem; letter-spacing: .22em; color: rgba(201,168,76,.45);
+      font-size: 0.7029rem; letter-spacing: .22em; color: rgba(201,168,76,.45);
       text-transform: uppercase; margin-bottom: 6px;
     }
     .mb-text {
-      font-size: 0.84rem; color: rgba(232,216,180,.80); line-height: 1.65;
+      font-size: 1.0029rem; color: rgba(232,216,180,.80); line-height: 1.65;
       letter-spacing: .02em;
     }
     .ai-text { color: #e8d8b4; }
     .mb-loading {
-      font-size: 0.75rem; color: rgba(201,168,76,.40); letter-spacing: .08em;
+      font-size: 0.9086rem; color: rgba(201,168,76,.40); letter-spacing: .08em;
       display: flex; align-items: center; gap: 6px;
     }
     .loading-dot {
@@ -777,7 +777,7 @@ interface FreeflowExchange {
       margin-bottom: 8px;
     }
     .save-btn {
-      font-family: 'Cormorant Garamond', serif; font-size: 0.78rem;
+      font-family: 'Cormorant Garamond', serif; font-size: 0.9343rem;
       letter-spacing: .16em; color: #0b0714;
       background: linear-gradient(135deg, #b8922e, #f0d87a, #b8922e);
       border: none; border-radius: 50px; padding: 12px 36px;
@@ -785,9 +785,9 @@ interface FreeflowExchange {
       transition: box-shadow .3s, transform .2s; text-transform: uppercase;
     }
     .save-btn:hover { box-shadow: 0 6px 28px rgba(201,168,76,.50); transform: translateY(-1px); }
-    .saved-msg { font-size: 0.78rem; color: rgba(201,168,76,.70); letter-spacing: .14em; }
+    .saved-msg { font-size: 0.9343rem; color: rgba(201,168,76,.70); letter-spacing: .14em; }
     .reset-btn {
-      font-family: 'Cormorant Garamond', serif; font-size: 0.72rem;
+      font-family: 'Cormorant Garamond', serif; font-size: 0.8657rem;
       letter-spacing: .14em; color: rgba(232,216,180,.45); background: none;
       border: 1px solid rgba(255,255,255,.10); border-radius: 20px;
       padding: 8px 22px; cursor: pointer; transition: all .25s;
@@ -812,7 +812,7 @@ interface FreeflowExchange {
     .ff-ex-draw-num { color: rgba(123,47,191,.80) !important; }
     /* Question shown above cards */
     .ff-ex-question {
-      font-size: .92rem !important;
+      font-size: 1.0971rem !important;
       padding-bottom: 10px !important;
       margin-bottom: 4px !important;
     }
@@ -828,13 +828,13 @@ interface FreeflowExchange {
       background: linear-gradient(90deg, transparent, rgba(201,168,76,.40), transparent);
     }
     .ff-draw-label {
-      font-size: .62rem; letter-spacing: .22em; color: rgba(123,47,191,.80);
+      font-size: 0.7371rem; letter-spacing: .22em; color: rgba(123,47,191,.80);
       text-transform: uppercase; margin-bottom: 4px;
     }
 
     /* ── reveal-btn-ghost: "Select X more" ───────────────────── */
     .reveal-btn-ghost {
-      font-family: 'Cormorant Garamond', serif; font-size: .78rem;
+      font-family: 'Cormorant Garamond', serif; font-size: 0.9343rem;
       letter-spacing: .14em; color: rgba(201,168,76,.60);
       background: rgba(201,168,76,.06);
       border: 1px dashed rgba(201,168,76,.30); border-radius: 50px;
@@ -847,7 +847,7 @@ interface FreeflowExchange {
 
     /* ─── Freeflow ────────────────────────────────────────────────── */
     .next-q-btn {
-      font-family: 'Cinzel Decorative', serif; font-size: 0.74rem;
+      font-family: 'Cinzel Decorative', serif; font-size: 0.8829rem;
       letter-spacing: .16em; color: #0b0714;
       background: linear-gradient(135deg, #4a0d9e, #7b2fbf, #4a0d9e);
       border: none; border-radius: 50px; padding: 14px 40px;
@@ -858,7 +858,7 @@ interface FreeflowExchange {
       box-shadow: 0 6px 32px rgba(123,47,191,.65); transform: translateY(-2px);
     }
     .ff-limit {
-      font-size: 0.7rem; color: rgba(201,168,76,.55);
+      font-size: 0.84rem; color: rgba(201,168,76,.55);
       letter-spacing: .14em; font-style: italic;
     }
   `],
@@ -945,7 +945,7 @@ export class ReadingComponent implements OnInit {
     SPREAD_CONFIGS[this.spreadType()]?.label ?? 'Select Style'
   );
 
-  // ── Lifecycle ───────────────────────────────────────────────────────────
+  // Lifecycle
   ngOnInit() {
     this.api.getAllCards().subscribe({
       next: cards => this.allCards.set(cards),
@@ -954,7 +954,7 @@ export class ReadingComponent implements OnInit {
     this.initBG();
   }
 
-  // ── Spread selection: reset everything ──────────────────────────────────
+  // Spread selection: reset everything
   selectSpread(key: string) {
     this.spreadType.set(key);
     const size = SPREAD_CONFIGS[key]?.size ?? 1;
@@ -966,11 +966,9 @@ export class ReadingComponent implements OnInit {
     this.isSaved.set(false);
     this.drawCount.set(0);
     this.freeflowDrawnIds.set(new Set());
-    // card-deck resets automatically via ngOnChanges([allCards/spreadSize])
   }
 
   onSelectionChange(items: CardSelectionItem[]) {
-    // Suppress is set when we triggered the deck change ourselves (returnCard)
     if (this._suppressDeckCallback) {
       this._suppressDeckCallback = false;
       this._prevDeckItems = [...items];
@@ -980,7 +978,6 @@ export class ReadingComponent implements OnInit {
     const prevIds = new Set(this._prevDeckItems.map(i => i.card.card_id));
     const newIds  = new Set(items.map(i => i.card.card_id));
 
-    // Detect newly added card → fill next null slot
     const added = items.find(i => !prevIds.has(i.card.card_id));
     if (added) {
       const nextIdx = this.selectedSlots().findIndex(s => s === null);
@@ -993,8 +990,6 @@ export class ReadingComponent implements OnInit {
       }
     }
 
-    // Detect removed card (deck-side return, shouldn't normally occur with
-    // slot architecture, but handle gracefully)
     const removedId = this._prevDeckItems.find(i => !newIds.has(i.card.card_id))?.card.card_id;
     if (removedId) {
       const slotIdx = this.selectedSlots().findIndex(s => s?.card.card_id === removedId);
@@ -1009,7 +1004,6 @@ export class ReadingComponent implements OnInit {
 
     this._prevDeckItems = [...items];
 
-    // Reset reveal state if selection changed
     if ((added || removedId) && (this.revealedSet().size > 0 || this.isRevealing())) {
       this.revealedSet.set(new Set());
       this.isRevealing.set(false);
@@ -1022,20 +1016,17 @@ export class ReadingComponent implements OnInit {
     const item = this.selectedSlots()[slotIndex];
     if (!item) return;
 
-    // 1. Null out the slot immediately
     this.selectedSlots.update(arr => {
       const n = [...arr];
       n[slotIndex] = null;
       return n;
     });
 
-    // 2. Reset reveal state
     this.revealedSet.set(new Set());
     this.isRevealing.set(false);
     this.questionMeanings.set({});
     this.isSaved.set(false);
 
-    // 3. Tell the deck to un-select this card (suppress the echo callback)
     this._suppressDeckCallback = true;
     this._prevDeckItems = this._prevDeckItems.filter(i => i.card.card_id !== item.card.card_id);
     this.deckRef?.returnCardById(item.card.card_id);
@@ -1050,7 +1041,7 @@ export class ReadingComponent implements OnInit {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // ── Reveal sequence ─────────────────────────────────────────────────────
+  // Reveal sequence
   startReveal() {
     if (this.isRevealing()) return;
     this.isRevealing.set(true);
@@ -1086,7 +1077,6 @@ export class ReadingComponent implements OnInit {
     });
   }
 
-  /** Build the card image URL for the current theme */
   cardImageUrl(cardId: string): string {
     return `/assets/cards/${this.cardTheme()}/${cardId}.webp`;
   }
@@ -1095,7 +1085,7 @@ export class ReadingComponent implements OnInit {
     (e.target as HTMLImageElement).style.display = 'none';
   }
 
-  // ── Save ────────────────────────────────────────────────────────────────
+  // Save
   saveReading() {
     if (this.isSaved()) return;
     const items = this.selectedItems();
@@ -1114,18 +1104,16 @@ export class ReadingComponent implements OnInit {
     });
   }
 
-  // ── Freeflow: advance to next question (keep deck pool) ─────────────────
+  // Freeflow: advance to next question
   nextQuestion() {
-    const items   = this.selectedItems();
+    const items    = this.selectedItems();
     const meanings = this.questionMeanings();
 
-    // 1. บันทึก exchange ปัจจุบันลง history
     this.freeflowExchanges.update(arr => [
       ...arr,
       { question: this.question, items: [...items], meanings: { ...meanings } },
     ]);
 
-    // 2. Auto-save ลง backend
     if (items.length > 0) {
       this.api.createReading({
         question:    this.question || undefined,
@@ -1138,17 +1126,14 @@ export class ReadingComponent implements OnInit {
       }).subscribe();
     }
 
-    // 3. Permanently remove drawn cards from pool
     items.forEach(item => {
       this.freeflowDrawnIds.update(s => {
         const n = new Set(s); n.add(item.card.card_id); return n;
       });
     });
 
-    // 4. Advance counter
     this.drawCount.update(n => n + items.length);
 
-    // 5. Clear reading state (deckCards computed auto-rebuilds reduced deck)
     this.question = '';
     this.selectedSlots.set(Array(this.spreadSize()).fill(null));
     this._prevDeckItems = [];
@@ -1157,11 +1142,10 @@ export class ReadingComponent implements OnInit {
     this.questionMeanings.set({});
     this.isSaved.set(false);
 
-    // 6. Scroll back to question zone
     this.scrollTo('zone-start');
   }
 
-  // ── Reset ───────────────────────────────────────────────────────────────
+  // Reset
   resetAll() {
     this.selectedSlots.set(Array(this.spreadSize()).fill(null));
     this._prevDeckItems = [];
@@ -1179,7 +1163,7 @@ export class ReadingComponent implements OnInit {
 
   logout() { this.auth.logout(); }
 
-  // ── WebGL background ────────────────────────────────────────────────────
+  // WebGL background
   private initBG() {
     setTimeout(() => {
       const c = document.getElementById('bg') as HTMLCanvasElement;
@@ -1196,7 +1180,7 @@ export class ReadingComponent implements OnInit {
           return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y); }
         float fbm(vec2 p){ float v=0.,a=.5; for(int i=0;i<4;i++){v+=a*noise(p);p*=2.1;a*=.48;} return v; }
         void main(){
-          float tt=t*0.008, bt=sin(t*.018)*.5+.5, bt2=sin(t*.011+1.3)*.5+.5;
+          float tt=t*0.5, bt=sin(t*.018)*.5+.5, bt2=sin(t*.011+1.3)*.5+.5;
           vec2 uv=v;
           float a=fbm(uv*1.8+vec2(tt,tt*.55))*.65+fbm(uv*3.5-vec2(tt*.4,tt))*.35;
           vec3 col=mix(vec3(.03,.01,.06),vec3(.07,.02,.17),a);

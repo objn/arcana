@@ -17,11 +17,11 @@ import { AuthService } from '../../../core/services/auth.service';
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
           <div class="field">
-            <label>อีเมล</label>
+            <label>Email</label>
             <input type="email" formControlName="email" placeholder="your@email.com" autocomplete="email">
           </div>
           <div class="field">
-            <label>รหัสผ่าน</label>
+            <label>Password</label>
             <input type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password">
           </div>
 
@@ -30,11 +30,11 @@ import { AuthService } from '../../../core/services/auth.service';
           }
 
           <button type="submit" class="draw-btn" [disabled]="loading() || form.invalid">
-            {{ loading() ? 'กำลังเข้าสู่ระบบ…' : '✦ เข้าสู่ระบบ ✦' }}
+            {{ loading() ? 'Sign in…' : '✦ Sign in ✦' }}
           </button>
         </form>
 
-        <p class="auth-link">ยังไม่มีบัญชี? <a routerLink="/register">สมัครสมาชิก</a></p>
+        <p class="auth-link">Don't have an account?  <a routerLink="/register">Sign up</a></p>
       </div>
     </div>
   `,
@@ -92,7 +92,7 @@ export class LoginComponent {
     this.auth.login(email!, password!).subscribe({
       next: () => this.router.navigate(['/reading']),
       error: (err) => {
-        this.error.set(err.error?.detail || 'เข้าสู่ระบบไม่สำเร็จ');
+        this.error.set(err.error?.detail || 'Sign inไม่สำเร็จ');
         this.loading.set(false);
       },
     });
