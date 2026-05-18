@@ -828,7 +828,7 @@ interface FreeflowExchange {
       background: linear-gradient(90deg, transparent, rgba(201,168,76,.40), transparent);
     }
     .ff-draw-label {
-      font-size: 0.7371rem; letter-spacing: .22em; color: rgba(123,47,191,.80);
+      font-size: 0.7371rem; letter-spacing: .22em; color: #c9a84c;
       text-transform: uppercase; margin-bottom: 4px;
     }
 
